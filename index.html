@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Typhoontype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Typhoontype</h1>
+    <button id="themeToggle" onclick="toggleTheme()">🌓 Mode</button>
+  </header>
+
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <div id="liveStats">
+    💨 Net WPM: <span id="netWpm">0</span> |
+    📊 Gross WPM: <span id="grossWpm">0</span> |
+    🎯 Accuracy: <span id="accuracy">0%</span> |
+    ❌ Errors: <span id="errors">0</span>
+  </div>
+
+  <section id="typingArea">
+    <div id="highlightedText"></div>
+    <input type="text" id="wordInput" placeholder="Start typing..." autofocus />
+    <div id="resultMessage"></div>
+  </section>
+
+<footer>
+  <button id="retestButton" onclick="startTest()">Retest</button>
+  <p>Typhoon Typing - © 2025</p>
+</footer>
+
+  <script src="paragraphs.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

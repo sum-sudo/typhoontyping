@@ -1,0 +1,302 @@
+:root {
+  --bg-color: #f4f4f4;
+  --text-color: #000;
+  --header-bg: #333;
+  --header-text: #fff;
+  --box-bg: #fff;
+  --box-border: #ccc;
+  --correct: green;
+  --incorrect: red;
+  --cursor-color: #ff9800;
+}
+
+body.dark {
+  --bg-color: #535353;
+  --text-color: #fff;
+  --header-bg: #4b4444;
+  --header-text: #fff;
+  --box-bg: #616161;
+  --box-border: #3e395f;
+  --correct: #00ff00;
+  --incorrect: red;
+  --cursor-color: #ff9800;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  text-align: center;
+  transition: 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  padding: 15px 20px;
+  position: relative;
+}
+
+#themeToggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  color: var(--header-text);
+  border: 2px solid var(--header-text);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+#progress-container {
+  width: 100%;
+  background-color: #ddd;
+  height: 10px;
+  margin-top: 0;
+}
+
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: green;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#typingArea {
+  background: var(--box-bg);
+  border: 2px solid var(--box-border);
+  padding: 20px;
+  margin: 40px auto;
+  width: 90%;
+  max-width: 800px;
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+#highlightedText {
+  font-size: 20px;
+  text-align: left;
+  line-height: 1.6;
+  padding: 10px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--box-border);
+  min-height: 140px;
+  border-radius: 5px;
+  user-select: none;
+  font-family: 'Georgia', serif;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#highlightedText span {
+  white-space: nowrap;
+}
+
+.correct {
+  color: var(--correct);
+}
+
+.incorrect {
+  color: var(--incorrect);
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+.extra-typed {
+  color: red;
+  background-color: rgba(255, 0, 0, 0.2);
+  font-weight: bold;
+}
+
+.cursor {
+  position: relative;
+  display: inline-block;
+}
+
+.cursor::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background-color: var(--cursor-color);
+  left: 0;
+  top: 0;
+  animation: blink 0.8s steps(1) infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+#wordInput {
+  width: 100%;
+  height: 50px;
+  font-size: 18px;
+  margin-top: 15px;
+  padding: 10px;
+  color: var(--text-color);
+  background: var(--box-bg);
+  border: 1px solid var(--box-border);
+  border-radius: 5px;
+  box-sizing: border-box;
+  outline: none;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#scoreBoard {
+  font-size: 18px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+#resultMessage {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 20px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+#resultMessage.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+footer {
+  background-color: var(--box-border);
+  padding: 15px;
+  color: var(--text-color);
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+footer button#retestButton {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  position: absolute;
+  right: 20px; /* Keeps button on the left side of the footer */
+}
+
+footer button#retestButton:hover {
+  background-color: #0056b3;
+}
+
+footer p {
+  margin: 0;
+  font-size: 14px;
+  white-space: nowrap; /* Prevents the message from breaking into the next line */
+}
+
+#liveStats {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-size: 18px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* Tooltip when hovering over the retest button */
+footer button#retestButton::after {
+  content: "Press the Tab key to retest!";
+  position: absolute;
+  top: -30px;
+  right: -130%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  white-space: nowrap; /* Prevents the message from breaking into the next line */
+}
+
+footer button#retestButton:hover::after {
+  opacity: 1;
+}
+
+.word-active {
+  background-color: #d0ebff;
+}
+
+/* Media Queries */
+@media (max-width: 1200px) {
+  #typingArea {
+    width: 80%;
+  }
+}
+
+@media (max-width: 768px) {
+  #typingArea {
+    width: 90%;
+  }
+
+  #highlightedText {
+    font-size: 18px;
+  }
+
+  #wordInput {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 15px 10px;
+  }
+
+  #typingArea {
+    width: 95%;
+  }
+
+  #highlightedText {
+    font-size: 16px;
+  }
+
+  #wordInput {
+    font-size: 14px;
+  }
+
+  #scoreBoard {
+    font-size: 16px;
+  }
+
+  footer {
+    padding: 10px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+}
