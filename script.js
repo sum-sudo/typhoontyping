@@ -14,18 +14,19 @@ let totalErrors = 0;
 let startTime = null;
 let totalCharacters = 0;
 let typedCharacters = 0;
+let isSpacePressed = false;
 let testStarted = false;
 
-// Start test
+// This function is responsible for starting any typing test
 function startTest() {
   testStarted = false;
-  startTime = null;
 
   const paragraph = paragraphs[Math.floor(Math.random() * paragraphs.length)];
-  words = paragraph.trim().split(/\s+/);
+  words = paragraph.trim().split(" ");
   currentWordIndex = 0;
   correctWords = 0;
   totalErrors = 0;
+  startTime = null;
   totalCharacters = paragraph.length;
   typedCharacters = 0;
 
@@ -44,7 +45,6 @@ function startTest() {
   renderWords();
 }
 
-// Render words on screen
 function renderWords() {
   highlightedText.innerHTML = words
     .map((word, idx) => {
@@ -58,21 +58,110 @@ function renderWords() {
   updateActiveWordHighlight();
 }
 
-// Update blinking cursor
 function updateCursor(charIndex) {
   document.querySelectorAll(".cursor").forEach((el) => el.classList.remove("cursor"));
   const charSpan = document.getElementById(`char-${currentWordIndex}-${charIndex}`);
   if (charSpan) charSpan.classList.add("cursor");
 }
 
-// Highlight current word
 function updateActiveWordHighlight() {
   document.querySelectorAll(".word").forEach((el) => el.classList.remove("active-word"));
   const current = document.getElementById(`word-${currentWordIndex}`);
   if (current) current.classList.add("active-word");
 }
 
-// Update statistics
+// ✅ FULLY FIXED INPUT HANDLER WITH 3 EXTRA CHARACTER RESTRICTION
+wordInput.addEventListener("input", function () {
+  const typedWord = wordInput.value;
+  const currentWord = words[currentWordIndex];
+  const wordSpan = document.getElementById(`word-${currentWordIndex}`);
+
+  if (typedWord.length > currentWord.length + 3) {
+    wordInput.value = typedWord.slice(0, currentWord.length + 3);
+    return;
+  }
+
+  Array.from(wordSpan.children).forEach((charSpan) => {
+    if (charSpan.classList.contains("extra-typed")) {
+      charSpan.remove();
+    } else {
+      charSpan.className = "";
+    }
+  });
+
+  for (let i = 0; i < typedWord.length; i++) {
+    if (i < currentWord.length) {
+      if (typedWord[i] === currentWord[i]) {
+        wordSpan.children[i].className = "correct";
+      } else {
+        wordSpan.children[i].className = "incorrect";
+      }
+    } else {
+      const extraCharSpan = document.createElement("span");
+      extraCharSpan.classList.add("extra-typed");
+      extraCharSpan.innerText = typedWord[i];
+      wordSpan.appendChild(extraCharSpan);
+    }
+  }
+
+  updateCursor(typedWord.length);
+  typedCharacters = document.querySelectorAll(".correct, .incorrect, .extra-typed").length;
+  updateProgressBar();
+
+  if (currentWordIndex >= words.length - 1 && typedWord === words[currentWordIndex]) {
+    endGame();
+  }
+});
+
+wordInput.addEventListener("keydown", function (e) {
+  if (!testStarted) {
+    startTime = new Date();
+    testStarted = true;
+  }
+
+  if (e.key === " ") {
+    e.preventDefault();
+
+    if (!startTime) startTime = new Date();
+
+    const typedWord = wordInput.value.trim();
+    const correctWord = words[currentWordIndex];
+    const wordSpan = document.getElementById(`word-${currentWordIndex}`);
+
+    wordSpan.classList.remove("correct", "incorrect");
+
+    if (typedWord === correctWord) {
+      wordSpan.classList.add("correct");
+      correctWords++;
+    } else {
+      wordSpan.classList.add("incorrect");
+      totalErrors++;
+    }
+
+    currentWordIndex++;
+    wordInput.value = "";
+
+    updateStats();
+    updateCursor(0);
+    updateActiveWordHighlight();
+
+    isSpacePressed = true;
+
+    if (currentWordIndex >= words.length) {
+      endGame();
+    }
+  }
+
+  if (
+    e.key === "Backspace" &&
+    wordInput.selectionStart === 0 &&
+    currentWordIndex > 0 &&
+    isSpacePressed
+  ) {
+    e.preventDefault();
+  }
+});
+
 function updateStats() {
   const elapsedTime = (new Date() - startTime) / 60000;
   const grossWPM = Math.round((typedCharacters / 5) / elapsedTime || 0);
@@ -97,13 +186,11 @@ function updateStats() {
   }
 }
 
-// Update progress bar
 function updateProgressBar() {
   const progress = Math.min((typedCharacters / totalCharacters) * 100, 100);
   progressBar.style.width = `${progress}%`;
 }
 
-// End the game
 function endGame() {
   wordInput.disabled = true;
   resultMessage.innerText = `🎉 Finished! Net WPM: ${netWpmDisplay.innerText} | Accuracy: ${accuracyDisplay.innerText}`;
@@ -111,89 +198,16 @@ function endGame() {
   progressBar.style.width = '100%';
 }
 
-// Input Handler
-wordInput.addEventListener("input", function (e) {
-  if (!testStarted) {
-    startTime = new Date();
-    testStarted = true;
-  }
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+}
 
-  let typed = wordInput.value;
-
-  // If space pressed OR last word typed completely
-  if (typed.endsWith(' ') || (currentWordIndex === words.length - 1 && typed.trim() === words[currentWordIndex])) {
-    const typedWord = typed.trim();
-    const correctWord = words[currentWordIndex];
-    const wordSpan = document.getElementById(`word-${currentWordIndex}`);
-
-    if (typedWord === correctWord) {
-      wordSpan.classList.add("correct");
-      correctWords++;
-    } else {
-      wordSpan.classList.add("incorrect");
-      totalErrors++;
-    }
-
-    currentWordIndex++;
-    wordInput.value = "";
-
-    updateStats();
-    updateCursor(0);
-    updateActiveWordHighlight();
-
-    if (currentWordIndex >= words.length) {
-      endGame();
-    }
-    return;
-  }
-
-  const currentWord = words[currentWordIndex];
-  const wordSpan = document.getElementById(`word-${currentWordIndex}`);
-
-  Array.from(wordSpan.children).forEach((charSpan) => {
-    if (charSpan.classList.contains("extra-typed")) {
-      charSpan.remove();
-    } else {
-      charSpan.className = "";
-    }
-  });
-
-  for (let i = 0; i < typed.length; i++) {
-    if (i < currentWord.length) {
-      if (typed[i] === currentWord[i]) {
-        wordSpan.children[i].className = "correct";
-      } else {
-        wordSpan.children[i].className = "incorrect";
-      }
-    } else {
-      const extraCharSpan = document.createElement("span");
-      extraCharSpan.classList.add("extra-typed");
-      extraCharSpan.innerText = typed[i];
-      wordSpan.appendChild(extraCharSpan);
-    }
-  }
-
-  updateCursor(typed.length);
-  typedCharacters = document.querySelectorAll(".correct, .incorrect, .extra-typed").length;
-  updateProgressBar();
-});
-
-// Retest with Tab Key
+// ✅ Enable Tab key to restart the test
 document.addEventListener("keydown", function (e) {
   if (e.key === "Tab") {
     e.preventDefault();
     startTest();
   }
 });
-
-// Theme Toggle
-function toggleTheme() {
-  document.body.classList.toggle("dark");
-}
-
-// Multiplayer Button
-function startMultiplayer() {
-  alert("🎮 Multiplayer mode coming soon!");
-}
 
 window.onload = startTest;
