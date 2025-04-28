@@ -17,7 +17,6 @@ let typedCharacters = 0;
 let isSpacePressed = false;
 let testStarted = false;
 
-// Start the test
 function startTest() {
   testStarted = false;
   startTime = null;
@@ -70,7 +69,6 @@ function updateActiveWordHighlight() {
   if (current) current.classList.add("active-word");
 }
 
-// Handle input
 wordInput.addEventListener("input", function () {
   const typedWord = wordInput.value;
   const currentWord = words[currentWordIndex];
@@ -113,7 +111,6 @@ wordInput.addEventListener("input", function () {
   }
 });
 
-// Handle key presses inside input
 wordInput.addEventListener("keydown", function (e) {
   if (e.key === " ") {
     e.preventDefault();
@@ -156,7 +153,6 @@ wordInput.addEventListener("keydown", function (e) {
   }
 });
 
-// Update stats
 function updateStats() {
   const elapsedTime = (new Date() - startTime) / 60000;
   const grossWPM = Math.round((typedCharacters / 5) / elapsedTime || 0);
@@ -193,12 +189,11 @@ function endGame() {
   progressBar.style.width = '100%';
 }
 
-// Theme toggle
 function toggleTheme() {
   document.body.classList.toggle("dark");
 }
 
-// Start timer when any character key pressed (global)
+// Global timer start (PC + Mobile)
 document.addEventListener("keydown", function (e) {
   if (!testStarted && e.key.length === 1) {
     startTime = new Date();
@@ -206,12 +201,33 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-// Allow retest with Tab key
+// Mobile support: start when input gets focus + typing starts
+wordInput.addEventListener("focus", function () {
+  if (!testStarted) {
+    wordInput.addEventListener("input", mobileFirstInputStart, { once: true });
+  }
+});
+
+function mobileFirstInputStart() {
+  if (!testStarted) {
+    startTime = new Date();
+    testStarted = true;
+  }
+}
+
+// Retest using Tab key (PC + Mobile with external keyboard)
 document.addEventListener("keydown", function (e) {
   if (e.key === "Tab") {
     e.preventDefault();
     startTest();
   }
 });
+
+// Prevent scrolling while typing on mobile
+document.addEventListener('touchmove', function (e) {
+  if (e.target === wordInput) {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 window.onload = startTest;
