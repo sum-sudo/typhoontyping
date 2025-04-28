@@ -15,18 +15,18 @@ let startTime = null;
 let totalCharacters = 0;
 let typedCharacters = 0;
 let isSpacePressed = false;
-let testStarted = false; // Flag to check if the test has started
+let testStarted = false;
 
-// This function is responsible for starting any typing test
+// Start the test
 function startTest() {
-  testStarted = false; // Reset the testStarted flag for retests
+  testStarted = false;
+  startTime = null;
 
   const paragraph = paragraphs[Math.floor(Math.random() * paragraphs.length)];
   words = paragraph.trim().split(" ");
   currentWordIndex = 0;
   correctWords = 0;
   totalErrors = 0;
-  startTime = null;
   totalCharacters = paragraph.length;
   typedCharacters = 0;
 
@@ -70,13 +70,12 @@ function updateActiveWordHighlight() {
   if (current) current.classList.add("active-word");
 }
 
-// ✅ FULLY FIXED INPUT HANDLER WITH 3 EXTRA CHARACTER RESTRICTION
+// Handle input
 wordInput.addEventListener("input", function () {
   const typedWord = wordInput.value;
   const currentWord = words[currentWordIndex];
   const wordSpan = document.getElementById(`word-${currentWordIndex}`);
 
-  // Block further input if more than 3 extra characters
   if (typedWord.length > currentWord.length + 3) {
     wordInput.value = typedWord.slice(0, currentWord.length + 3);
     return;
@@ -114,16 +113,10 @@ wordInput.addEventListener("input", function () {
   }
 });
 
+// Handle key presses inside input
 wordInput.addEventListener("keydown", function (e) {
-  if (!testStarted) {
-    startTime = new Date();
-    testStarted = true;
-  }
-
   if (e.key === " ") {
     e.preventDefault();
-
-    if (!startTime) startTime = new Date();
 
     const typedWord = wordInput.value.trim();
     const correctWord = words[currentWordIndex];
@@ -163,6 +156,7 @@ wordInput.addEventListener("keydown", function (e) {
   }
 });
 
+// Update stats
 function updateStats() {
   const elapsedTime = (new Date() - startTime) / 60000;
   const grossWPM = Math.round((typedCharacters / 5) / elapsedTime || 0);
@@ -199,11 +193,20 @@ function endGame() {
   progressBar.style.width = '100%';
 }
 
+// Theme toggle
 function toggleTheme() {
   document.body.classList.toggle("dark");
 }
 
-// ✅ Enable Tab key to restart the test
+// Start timer when any character key pressed (global)
+document.addEventListener("keydown", function (e) {
+  if (!testStarted && e.key.length === 1) {
+    startTime = new Date();
+    testStarted = true;
+  }
+});
+
+// Allow retest with Tab key
 document.addEventListener("keydown", function (e) {
   if (e.key === "Tab") {
     e.preventDefault();
