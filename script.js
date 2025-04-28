@@ -16,6 +16,7 @@ let totalCharacters = 0;
 let typedCharacters = 0;
 let testStarted = false;
 
+// Start test
 function startTest() {
   testStarted = false;
   startTime = null;
@@ -43,6 +44,7 @@ function startTest() {
   renderWords();
 }
 
+// Render words on screen
 function renderWords() {
   highlightedText.innerHTML = words
     .map((word, idx) => {
@@ -56,18 +58,21 @@ function renderWords() {
   updateActiveWordHighlight();
 }
 
+// Update blinking cursor
 function updateCursor(charIndex) {
   document.querySelectorAll(".cursor").forEach((el) => el.classList.remove("cursor"));
   const charSpan = document.getElementById(`char-${currentWordIndex}-${charIndex}`);
   if (charSpan) charSpan.classList.add("cursor");
 }
 
+// Highlight current word
 function updateActiveWordHighlight() {
   document.querySelectorAll(".word").forEach((el) => el.classList.remove("active-word"));
   const current = document.getElementById(`word-${currentWordIndex}`);
   if (current) current.classList.add("active-word");
 }
 
+// Update statistics
 function updateStats() {
   const elapsedTime = (new Date() - startTime) / 60000;
   const grossWPM = Math.round((typedCharacters / 5) / elapsedTime || 0);
@@ -92,11 +97,13 @@ function updateStats() {
   }
 }
 
+// Update progress bar
 function updateProgressBar() {
   const progress = Math.min((typedCharacters / totalCharacters) * 100, 100);
   progressBar.style.width = `${progress}%`;
 }
 
+// End the game
 function endGame() {
   wordInput.disabled = true;
   resultMessage.innerText = `🎉 Finished! Net WPM: ${netWpmDisplay.innerText} | Accuracy: ${accuracyDisplay.innerText}`;
@@ -104,8 +111,7 @@ function endGame() {
   progressBar.style.width = '100%';
 }
 
-// --- INPUT HANDLER ---
-
+// Input Handler
 wordInput.addEventListener("input", function (e) {
   if (!testStarted) {
     startTime = new Date();
@@ -113,9 +119,9 @@ wordInput.addEventListener("input", function (e) {
   }
 
   let typed = wordInput.value;
-  
-  // Check for space at the end
-  if (typed.endsWith(' ')) {
+
+  // If space pressed OR last word typed completely
+  if (typed.endsWith(' ') || (currentWordIndex === words.length - 1 && typed.trim() === words[currentWordIndex])) {
     const typedWord = typed.trim();
     const correctWord = words[currentWordIndex];
     const wordSpan = document.getElementById(`word-${currentWordIndex}`);
@@ -172,9 +178,7 @@ wordInput.addEventListener("input", function (e) {
   updateProgressBar();
 });
 
-// --- SHORTCUT KEYS ---
-
-// Retest with Tab
+// Retest with Tab Key
 document.addEventListener("keydown", function (e) {
   if (e.key === "Tab") {
     e.preventDefault();
@@ -182,9 +186,14 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-// Theme toggle
+// Theme Toggle
 function toggleTheme() {
   document.body.classList.toggle("dark");
+}
+
+// Multiplayer Button
+function startMultiplayer() {
+  alert("🎮 Multiplayer mode coming soon!");
 }
 
 window.onload = startTest;
