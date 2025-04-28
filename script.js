@@ -14,7 +14,6 @@ let totalErrors = 0;
 let startTime = null;
 let totalCharacters = 0;
 let typedCharacters = 0;
-let isSpacePressed = false;
 let testStarted = false;
 
 function startTest() {
@@ -22,7 +21,7 @@ function startTest() {
   startTime = null;
 
   const paragraph = paragraphs[Math.floor(Math.random() * paragraphs.length)];
-  words = paragraph.trim().split(" ");
+  words = paragraph.trim().split(/\s+/);
   currentWordIndex = 0;
   correctWords = 0;
   totalErrors = 0;
@@ -69,90 +68,6 @@ function updateActiveWordHighlight() {
   if (current) current.classList.add("active-word");
 }
 
-wordInput.addEventListener("input", function () {
-  const typedWord = wordInput.value;
-  const currentWord = words[currentWordIndex];
-  const wordSpan = document.getElementById(`word-${currentWordIndex}`);
-
-  if (typedWord.length > currentWord.length + 3) {
-    wordInput.value = typedWord.slice(0, currentWord.length + 3);
-    return;
-  }
-
-  Array.from(wordSpan.children).forEach((charSpan) => {
-    if (charSpan.classList.contains("extra-typed")) {
-      charSpan.remove();
-    } else {
-      charSpan.className = "";
-    }
-  });
-
-  for (let i = 0; i < typedWord.length; i++) {
-    if (i < currentWord.length) {
-      if (typedWord[i] === currentWord[i]) {
-        wordSpan.children[i].className = "correct";
-      } else {
-        wordSpan.children[i].className = "incorrect";
-      }
-    } else {
-      const extraCharSpan = document.createElement("span");
-      extraCharSpan.classList.add("extra-typed");
-      extraCharSpan.innerText = typedWord[i];
-      wordSpan.appendChild(extraCharSpan);
-    }
-  }
-
-  updateCursor(typedWord.length);
-  typedCharacters = document.querySelectorAll(".correct, .incorrect, .extra-typed").length;
-  updateProgressBar();
-
-  if (currentWordIndex >= words.length - 1 && typedWord === words[currentWordIndex]) {
-    endGame();
-  }
-});
-
-wordInput.addEventListener("keydown", function (e) {
-  if (e.key === " ") {
-    e.preventDefault();
-
-    const typedWord = wordInput.value.trim();
-    const correctWord = words[currentWordIndex];
-    const wordSpan = document.getElementById(`word-${currentWordIndex}`);
-
-    wordSpan.classList.remove("correct", "incorrect");
-
-    if (typedWord === correctWord) {
-      wordSpan.classList.add("correct");
-      correctWords++;
-    } else {
-      wordSpan.classList.add("incorrect");
-      totalErrors++;
-    }
-
-    currentWordIndex++;
-    wordInput.value = "";
-
-    updateStats();
-    updateCursor(0);
-    updateActiveWordHighlight();
-
-    isSpacePressed = true;
-
-    if (currentWordIndex >= words.length) {
-      endGame();
-    }
-  }
-
-  if (
-    e.key === "Backspace" &&
-    wordInput.selectionStart === 0 &&
-    currentWordIndex > 0 &&
-    isSpacePressed
-  ) {
-    e.preventDefault();
-  }
-});
-
 function updateStats() {
   const elapsedTime = (new Date() - startTime) / 60000;
   const grossWPM = Math.round((typedCharacters / 5) / elapsedTime || 0);
@@ -189,33 +104,77 @@ function endGame() {
   progressBar.style.width = '100%';
 }
 
-function toggleTheme() {
-  document.body.classList.toggle("dark");
-}
+// --- INPUT HANDLER ---
 
-// Global timer start (PC + Mobile)
-document.addEventListener("keydown", function (e) {
-  if (!testStarted && e.key.length === 1) {
-    startTime = new Date();
-    testStarted = true;
-  }
-});
-
-// Mobile support: start when input gets focus + typing starts
-wordInput.addEventListener("focus", function () {
-  if (!testStarted) {
-    wordInput.addEventListener("input", mobileFirstInputStart, { once: true });
-  }
-});
-
-function mobileFirstInputStart() {
+wordInput.addEventListener("input", function (e) {
   if (!testStarted) {
     startTime = new Date();
     testStarted = true;
   }
-}
 
-// Retest using Tab key (PC + Mobile with external keyboard)
+  let typed = wordInput.value;
+  
+  // Check for space at the end
+  if (typed.endsWith(' ')) {
+    const typedWord = typed.trim();
+    const correctWord = words[currentWordIndex];
+    const wordSpan = document.getElementById(`word-${currentWordIndex}`);
+
+    if (typedWord === correctWord) {
+      wordSpan.classList.add("correct");
+      correctWords++;
+    } else {
+      wordSpan.classList.add("incorrect");
+      totalErrors++;
+    }
+
+    currentWordIndex++;
+    wordInput.value = "";
+
+    updateStats();
+    updateCursor(0);
+    updateActiveWordHighlight();
+
+    if (currentWordIndex >= words.length) {
+      endGame();
+    }
+    return;
+  }
+
+  const currentWord = words[currentWordIndex];
+  const wordSpan = document.getElementById(`word-${currentWordIndex}`);
+
+  Array.from(wordSpan.children).forEach((charSpan) => {
+    if (charSpan.classList.contains("extra-typed")) {
+      charSpan.remove();
+    } else {
+      charSpan.className = "";
+    }
+  });
+
+  for (let i = 0; i < typed.length; i++) {
+    if (i < currentWord.length) {
+      if (typed[i] === currentWord[i]) {
+        wordSpan.children[i].className = "correct";
+      } else {
+        wordSpan.children[i].className = "incorrect";
+      }
+    } else {
+      const extraCharSpan = document.createElement("span");
+      extraCharSpan.classList.add("extra-typed");
+      extraCharSpan.innerText = typed[i];
+      wordSpan.appendChild(extraCharSpan);
+    }
+  }
+
+  updateCursor(typed.length);
+  typedCharacters = document.querySelectorAll(".correct, .incorrect, .extra-typed").length;
+  updateProgressBar();
+});
+
+// --- SHORTCUT KEYS ---
+
+// Retest with Tab
 document.addEventListener("keydown", function (e) {
   if (e.key === "Tab") {
     e.preventDefault();
@@ -223,11 +182,9 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-// Prevent scrolling while typing on mobile
-document.addEventListener('touchmove', function (e) {
-  if (e.target === wordInput) {
-    e.preventDefault();
-  }
-}, { passive: false });
+// Theme toggle
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+}
 
 window.onload = startTest;
