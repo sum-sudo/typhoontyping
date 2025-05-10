@@ -11,11 +11,11 @@
 }
 
 body.dark {
-  --bg-color: #535353;
+  --bg-color: #212121;
   --text-color: #fff;
-  --header-bg: #4b4444;
+  --header-bg: #113900;
   --header-text: #fff;
-  --box-bg: #616161;
+  --box-bg: #000e35;
   --box-border: #3e395f;
   --correct: #00ff00;
   --incorrect: red;
